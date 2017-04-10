@@ -4,7 +4,7 @@ storm-metrics-statsd is a module for [Storm](http://storm-project.net/) that ena
 
 ## Building/Installation
 
-    git clone https://github.com/endgameinc/storm-metrics-statsd.git
+    git clone https://github.com/jegeiger/storm-metrics-statsd.git
     cd storm-metrics-statsd
     mvn compile package install
 
@@ -44,6 +44,7 @@ based on the [storm-starter](https://github.com/nathanmarz/storm-starter) [Excla
     statsdConfig.put(StatsdMetricConsumer.STATSD_HOST, "statsd.server.mydomain.com");
     statsdConfig.put(StatsdMetricConsumer.STATSD_PORT, 8125);
     statsdConfig.put(StatsdMetricConsumer.STATSD_PREFIX, "storm.metrics.");
+    statsdConfig.put(StatsdMetricConsumer.STATSD_USE_HOSTNAME, "true");
     
     Config conf = new Config();
     conf.registerMetricsConsumer(StatsdMetricConsumer.class, statsdConfig, 2);
@@ -68,11 +69,12 @@ System wide deployment requires three steps:
 
     topology.metrics.consumer.register:
       - class: "com.endgame.storm.metrics.statsd.StatsdMetricConsumer"
-         parallelism.hint: 2
-         argument:
-           metrics.statsd.host: "statsd.server.mydomain.com"
-           metrics.statsd.port: 8125
-           metrics.statsd.prefix: "storm.metrics."
+        parallelism.hint: 2
+        argument:
+          metrics.statsd.host: "statsd.server.mydomain.com"
+          metrics.statsd.port: 8125
+          metrics.statsd.prefix: "storm.metrics."
+          metrics.statsd.usehostname: true
 
 #### 2. Install the `storm-metrics-statsd` and `java-statsd-client` JARs into `$STORM_HOME/lib/` ON EACH STORM NODE.
 
@@ -92,6 +94,22 @@ You can override the topology name used when reporting to statsd by calling:
     statsdConfig.put("topology.name", "myTopologyName");
 
 This will be useful if you use versioned topology names (.e.g. appending a timestamp or a version string), but only care to track them as one in statsd.    
+
+You can choose to include or exclude the hostname from the keyspace reported to statsd via the `metrics.statsd.usehostname` configuration option.
+Set this option to `false` to have the hostname excluded from the keyspace, or `true` if you'd like it included.  If you don't explicitly set this 
+property it will default to `true` for backwards compatability.
+
+## Changelog
+
+### v1.4.0
+- No longer escaping periods (.) in metric key names.
+
+### v1.3.0
+- Added the `metrics.statsd.usehostname` configuration option to conditionally include the workers hostname in the reported keyspace.
+
+### v1.2.0
+- Removed the workerId key from the reported key space
+
 
 ## License
 
@@ -114,6 +132,7 @@ Copyright 2014 [Endgame, Inc.](http://www.endgame.com/)
         KIND, either express or implied.  See the License for the
         specific language governing permissions and limitations
         under the License.
+
 
 ## Author
 
